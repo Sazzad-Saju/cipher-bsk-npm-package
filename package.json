@@ -1,0 +1,24 @@
+{
+  "name": "cipher-bsk",
+  "version": "1.0.0",
+  "description": "My developed  Bornomala Symmetric Key (BSK) stream cipher exported as npm package",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sazzad-Saju/cipher-bsk-npm-package.git"
+  },
+  "keywords": [
+    "BSK",
+    "Encrypt",
+    "Decrypt"
+  ],
+  "author": "Sazzad-Saju",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sazzad-Saju/cipher-bsk-npm-package/issues"
+  },
+  "homepage": "https://github.com/Sazzad-Saju/cipher-bsk-npm-package#readme"
+}
