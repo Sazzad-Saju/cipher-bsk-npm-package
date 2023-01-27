@@ -1,3 +1,9 @@
+/**
+ * Cipher: Bornomala Symmetric Key (BSK) stream cipher, a text encrypting tool
+ * Developed By: Sazzad-Saju
+ * Documentation: https://sazzad-saju.github.io/BSK-Online/
+ */
+
 let rand, max;
 
 //Replace in String
