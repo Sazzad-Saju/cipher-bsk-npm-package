@@ -1,54 +1,11 @@
-/**
- * Cipher: Bornomala Symmetric Key (BSK) stream cipher, a text encrypting tool
- * Developed By: Sazzad-Saju
- * Documentation: https://sazzad-saju.github.io/BSK-Online/
- */
-
-let rand, max;
-
-//Replace in String
-function replaceAt(str, index, newChar) {
-    function replacer(origChar, strIndex) {
-        if (strIndex === index)
-            return newChar;
-        else
-            return origChar;
-    }
-    return str.replace(/./g, replacer);
-}
-
-//swap in string
-function swapStr(str, first, last) {
-    return str.substr(0, first) +
-        str[last] +
-        str.substring(first + 1, last) +
-        str[first] +
-        str.substr(last + 1);
-}
-
-//random number generation
-function mulberry32(a) {
-    return function() {
-        var t = a += 0x6D2B79F5;
-        t = Math.imul(t ^ t >>> 15, t | 1);
-        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
-}
-
-function xmur3(str) {
-    for (var i = 0, h = 1779033703 ^ str.length; i < str.length; i++)
-        h = Math.imul(h ^ str.charCodeAt(i), 3432918353),
-        h = h << 13 | h >>> 19;
-    return function() {
-        h = Math.imul(h ^ h >>> 16, 2246822507);
-        h = Math.imul(h ^ h >>> 13, 3266489909);
-        return (h ^= h >>> 16) >>> 0;
-    }
-}
+const { replaceAt, mulberry32, xmur3 } = require('./utils');
 
 //KeyGeneration
-function keyGeneration(Mlength, K) {
+function keyGeneration(Mlength, K, state) {
+    if (!K || K.length === 0) {
+        throw new Error('Key cannot be empty');
+    }
+    
     let subkey1;
     let Klength = K.length;
 
@@ -93,14 +50,14 @@ function keyGeneration(Mlength, K) {
 
     //random-indexing
     var seed = xmur3(subkey1);
-    rand = mulberry32(seed());
+    state.rand = mulberry32(seed());
     for (var i = 0; i < Mlength; i++) {
         countK = subkey1[i].charCodeAt();
         while (countK > 10) {
             countK = countK % 10;
         }
-        max = Math.pow(10, countK);
-        var pos = parseInt(rand() * max) % Mlength;
+        state.max = Math.pow(10, countK);
+        var pos = parseInt(state.rand() * state.max) % Mlength;
         subkey1 = subkey1.split('');
         var temp = subkey1[i];
         subkey1[i] = subkey1[pos];
@@ -117,7 +74,7 @@ function keyGeneration(Mlength, K) {
     }
 
     //generate subkey2
-    var rndNum = parseInt(rand() * max)
+    var rndNum = parseInt(state.rand() * state.max)
     for (var i = 0; i < subkey2.length; i++) {
         var numb = subkey2[i].charCodeAt();
         rndNum = (numb + rndNum) % 95;
@@ -136,9 +93,11 @@ function keyGeneration(Mlength, K) {
 }
 
 //encryption
-function encrypt(M, K) {
+function encrypt(M, K, state) {
+    if (!M || !K) return '';
+    
     //generate keypair
-    let keyGen = keyGeneration(M.length, K)
+    let keyGen = keyGeneration(M.length, K, state)
         //subkey1 operation
     M = M.split('');
     for (var i = 0; i < M.length; i++) {
@@ -174,13 +133,13 @@ function encrypt(M, K) {
         M[i] = M[i].charCodeAt().toString(16);
         if (M[i] == '7e') {
             if (i % 2 == 0) {
-                var numb = parseInt(rand() * max) % 32;
+                var numb = parseInt(state.rand() * state.max) % 32;
                 M[i] = numb.toString(16);
                 if (M[i].length != 2) {
                     M[i] = "0" + M[i];
                 }
             } else {
-                var numb = parseInt(rand() * max) % 256;
+                var numb = parseInt(state.rand() * state.max) % 256;
                 if (numb < 126) {
                     numb += 130;
                 }
@@ -193,21 +152,10 @@ function encrypt(M, K) {
     return M;
 }
 
-//calculate padding characters
-function pad_bytes(C) {
-    var pad = 0;
-    C = C.match(/.{1,2}/g);
-    for (i = 0; i < C.length; i++) {
-        var val = parseInt(C[i], 16);
-        if (val < 32 || val > 125) {
-            pad += 1;
-        }
-    }
-    return pad;
-}
-
 //decryption
-function decrypt(C, K) {
+function decrypt(C, K, state) {
+    if (!C || !K) return '';
+    
     let Mlength = C.length / 2;
     var pad = 0;
     //pad characters elimination
@@ -222,7 +170,7 @@ function decrypt(C, K) {
 
     //Original Messege length and Key generation
     Mlength = Mlength - pad;
-    let keyGen = keyGeneration(Mlength, K);
+    let keyGen = keyGeneration(Mlength, K, state);
 
     //ASCII Conversion
     for (i = 0; i < C.length; i++) {
@@ -257,4 +205,4 @@ function decrypt(C, K) {
     return C;
 }
 
-module.exports = { encrypt, decrypt }
+module.exports = { encrypt, decrypt, keyGeneration };
