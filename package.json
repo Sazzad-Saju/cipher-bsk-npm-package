@@ -1,6 +1,6 @@
 {
   "name": "cipher-bsk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "My developed  Bornomala Symmetric Key (BSK) stream cipher exported as npm package",
   "main": "src/index.js",
   "scripts": {
